@@ -24,9 +24,9 @@ import java.util.List;
 @WebServlet("/api/messages")
 public class MessageServlet extends HttpServlet {
 
-    private final MessageDAO messageDAO = new MessageDAO();
-    private final ChannelDAO channelDAO = new ChannelDAO();
-    private final UserDAO userDAO = new UserDAO();
+    private final MessageDAO messageDAO = MessageDAO.getInstance();
+    private final ChannelDAO channelDAO = ChannelDAO.getInstance();
+    private final UserDAO userDAO = UserDAO.getInstance();
 
     // Configuration de l'ObjectMapper avec le module de gestion des dates
     private final ObjectMapper objectMapper = new ObjectMapper()

@@ -15,9 +15,9 @@ public class MainTest {
         System.out.println("=== DÉBUT DES TESTS JPA ===");
 
         // 1. Instanciation des DAOs
-        UserDAO userDAO = new UserDAO();
-        ChannelDAO channelDAO = new ChannelDAO();
-        MessageDAO messageDAO = new MessageDAO();
+        UserDAO userDAO = UserDAO.getInstance();
+        ChannelDAO channelDAO = ChannelDAO.getInstance();
+        MessageDAO messageDAO = MessageDAO.getInstance();
 
         try {
             // ==========================================================

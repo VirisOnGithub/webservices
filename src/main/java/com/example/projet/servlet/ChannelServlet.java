@@ -20,8 +20,8 @@ import java.util.List;
 @WebServlet("/api/channels")
 public class ChannelServlet extends HttpServlet {
 
-    private final ChannelDAO channelDAO = new ChannelDAO();
-    private final UserDAO userDAO = new UserDAO();
+    private final ChannelDAO channelDAO = ChannelDAO.getInstance();
+    private final UserDAO userDAO = UserDAO.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
             .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);

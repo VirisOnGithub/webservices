@@ -7,6 +7,17 @@ import jakarta.persistence.Persistence;
 import java.util.List;
 
 public class AttachmentDAO {
+    private static AttachmentDAO instance;
+
+    private AttachmentDAO() {}
+
+    public static AttachmentDAO getInstance() {
+        if (instance == null) {
+            instance = new AttachmentDAO();
+        }
+        return instance;
+    }
+
     private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("journalDeBordPU");
 
     private EntityManager getEntityManager() { return emf.createEntityManager(); }

@@ -7,6 +7,17 @@ import jakarta.persistence.Persistence;
 import java.util.List;
 
 public class MessageDAO {
+    private static MessageDAO instance;
+
+    private MessageDAO() {}
+
+    public static MessageDAO getInstance() {
+        if (instance == null) {
+            instance = new MessageDAO();
+        }
+        return instance;
+    }
+
     private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("journalDeBordPU");
 
     private EntityManager getEntityManager() { return emf.createEntityManager(); }

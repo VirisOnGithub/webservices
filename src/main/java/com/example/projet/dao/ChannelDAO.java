@@ -7,6 +7,16 @@ import jakarta.persistence.Persistence;
 import java.util.List;
 
 public class ChannelDAO {
+    private static ChannelDAO instance;
+
+    private ChannelDAO() {}
+
+    public static ChannelDAO getInstance() {
+        if (instance == null) {
+            instance = new ChannelDAO();
+        }
+        return instance;
+    }
 
     private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("journalDeBordPU");
 

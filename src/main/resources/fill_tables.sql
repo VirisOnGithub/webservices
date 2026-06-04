@@ -1,8 +1,8 @@
 -- 1. Insertion des Utilisateurs (Mots de passe fictifs pour le moment)
 INSERT INTO USERS (pseudo, email, password, avatar)
-VALUES ('Alice', 'alice@polytech.fr', 'passAlice123', 'avatar_alice.png'),
-       ('Bob', 'bob@polytech.fr', 'passBob456', 'avatar_bob.png'),
-       ('Charlie', 'charlie@polytech.fr', 'passCharlie789', 'avatar_charlie.png');
+VALUES ('Alice', 'alice@polytech.fr', '$2a$12$liuzLWcpKyRO9M63VeQx7.ryKhKfrF3rwUEx8TpUA7uNhiNyeJY2C', 'avatar_alice.png'),
+       ('Bob', 'bob@polytech.fr', '$2a$12$liuzLWcpKyRO9M63VeQx7.ryKhKfrF3rwUEx8TpUA7uNhiNyeJY2C', 'avatar_bob.png'),
+       ('Charlie', 'charlie@polytech.fr', '$2a$12$liuzLWcpKyRO9M63VeQx7.ryKhKfrF3rwUEx8TpUA7uNhiNyeJY2C', 'avatar_charlie.png');
 
 -- 2. Insertion des Canaux (Alice crée le général, Bob crée le projet secret)
 INSERT INTO CHANNEL (name, description, is_public, idu)
