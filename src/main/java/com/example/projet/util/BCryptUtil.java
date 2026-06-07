@@ -1,4 +1,4 @@
-package com.example.projet.utils;
+package com.example.projet.util;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 

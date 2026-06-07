@@ -2,7 +2,7 @@ package com.example.projet.servlet;
 
 import com.example.projet.dao.UserDAO;
 import com.example.projet.model.User;
-import com.example.projet.utils.BCryptUtil;
+import com.example.projet.util.BCryptUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

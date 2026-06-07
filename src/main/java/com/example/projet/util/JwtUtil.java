@@ -1,8 +1,9 @@
-package com.example.projet.utils;
+package com.example.projet.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -40,6 +41,11 @@ public class JwtUtil {
             return authHeader.substring(7);
         }
         return null;
+    }
+
+    public static String extractToken(HttpServletRequest req) {
+        String authHeader = req.getHeader("Authorization");
+        return extractToken(authHeader);
     }
 
     // test

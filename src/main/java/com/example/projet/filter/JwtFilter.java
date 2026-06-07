@@ -1,6 +1,6 @@
 package com.example.projet.filter;
 
-import com.example.projet.utils.JwtUtil;
+import com.example.projet.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;

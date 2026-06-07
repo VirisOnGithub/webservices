@@ -54,7 +54,7 @@ public class Message {
             joinColumns = @JoinColumn(name = "idm"),
             inverseJoinColumns = @JoinColumn(name = "idu")
     )
-    @JsonIgnore // Pour éviter les problèmes de sérialisation JSON (cycle infini)
+    @JsonIgnore
     private List<User> reactors = new ArrayList<>();
 
     public Message() {}

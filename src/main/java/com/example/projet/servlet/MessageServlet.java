@@ -6,11 +6,11 @@ import com.example.projet.dao.UserDAO;
 import com.example.projet.model.Channel;
 import com.example.projet.model.Message;
 import com.example.projet.model.User;
+import com.example.projet.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,8 +20,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
-@WebServlet("/api/messages")
+@WebServlet("/api/channels/*")
 public class MessageServlet extends HttpServlet {
 
     private final MessageDAO messageDAO = MessageDAO.getInstance();
@@ -33,18 +34,17 @@ public class MessageServlet extends HttpServlet {
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-    // 1. GET /api/messages?idc=XXX -> Récupérer l'historique des messages d'un canal
+    // 1. GET /api/channels/{idc}/messages : Récupérer les messages d'un canal
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         Integer idc;
-        try {
-            idc = Integer.parseInt(req.getParameter("idc"));
-        } catch (NumberFormatException e) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "L'ID du canal ('idc') doit être un entier valide.");
-            return;
-        }
+
+        String pathInfo = req.getPathInfo();
+
+        idc = getChannelId(resp, pathInfo);
+        if (idc == null) return;
 
         try {
             // Vérifier si le canal existe
@@ -67,11 +67,37 @@ public class MessageServlet extends HttpServlet {
         }
     }
 
-    // 2. POST /api/messages -> Publier un nouveau message dans un canal
+    private Integer getChannelId(HttpServletResponse resp, String pathInfo) throws IOException {
+        int idc;
+        if (pathInfo == null || pathInfo.equals("/")) {
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "L'ID du canal est requis dans l'URL (ex: /api/channels/c1/messages).");
+            return null;
+        }
+
+        // exemple : "/1/messages" => ["", "1", "messages"]
+        String[] segments = pathInfo.split("/");
+
+        if (segments.length == 3 && "messages".equals(segments[2])) {
+            try {
+                idc = Integer.parseInt(segments[1]);
+            } catch (NumberFormatException e) {
+                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "L'ID du canal doit être un entier valide.");
+                return null;
+            }
+        } else {
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "URL invalide. Utilisez le format : /api/channels/{idc}/messages");
+            return null;
+        }
+        return idc;
+    }
+
+    // 2. POST /api/channels/{idc}/messages : Publier un message dans un canal
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
+
+        Integer idc = getChannelId(resp, req.getPathInfo());
 
         try {
             // Lecture du corps JSON de la requête
@@ -83,23 +109,17 @@ public class MessageServlet extends HttpServlet {
                 return;
             }
 
-            if (messageInput.getChannel() == null || messageInput.getChannel().getIdc() == null) {
-                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "L'ID du canal cible ('channel.idc') est obligatoire.");
-                return;
-            }
-
-            // Vérification de l'existence du canal cible
-            Channel targetChannel = channelDAO.findById(messageInput.getChannel().getIdc());
-            if (targetChannel == null) {
-                sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Le canal spécifié n'existe pas.");
-                return;
-            }
-
-            // Comme pour ChannelServlet, on simule l'utilisateur connecté "u1" (Alice)
-            // (Sera géré dynamiquement à la Phase 4)
-            User author = userDAO.findById(1);
+            String token = JwtUtil.extractToken(req);
+            Integer authorId = Integer.valueOf(Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject());
+            User author = userDAO.findById(authorId);
             if (author == null) {
                 sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "L'auteur par défaut n'existe pas en base.");
+                return;
+            }
+
+            Channel targetChannel = channelDAO.findById(idc);
+            if (targetChannel == null) {
+                sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Le canal spécifié n'existe pas.");
                 return;
             }
 
@@ -111,7 +131,6 @@ public class MessageServlet extends HttpServlet {
             newMessage.setAuthor(author);
             newMessage.setChannel(targetChannel);
 
-            // Optionnel : Gestion d'un éventuel message parent s'il s'agit d'un fil / thread de réponse
             if (messageInput.getParentMessage() != null && messageInput.getParentMessage().getIdm() != null) {
                 Message parent = messageDAO.findById(messageInput.getParentMessage().getIdm());
                 if (parent != null) {
@@ -122,7 +141,7 @@ public class MessageServlet extends HttpServlet {
             // Sauvegarde définitive en base via JPA
             messageDAO.create(newMessage);
 
-            // Réponse 201 Created
+            // Réponse "201 Created"
             resp.setStatus(HttpServletResponse.SC_CREATED);
             PrintWriter out = resp.getWriter();
             out.print(objectMapper.writeValueAsString(newMessage));
