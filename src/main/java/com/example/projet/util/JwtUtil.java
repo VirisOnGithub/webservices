@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.UUID;
 
 public class JwtUtil {
 
@@ -16,7 +17,7 @@ public class JwtUtil {
     private static final long EXPIRATION_TIME = 3600000; // 1 heure
 
     // Créer un token
-    public static String createToken(Integer userId, String username) {
+    public static String createToken(UUID userId, String username) {
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("username", username)
@@ -51,7 +52,7 @@ public class JwtUtil {
     // test
     public static void main(String[] args) {
         // Exemple d'utilisation
-        String token = createToken(12345, "john_doe");
+        String token = createToken(UUID.randomUUID(), "john_doe");
         System.out.println("Token: " + token);
 
         Claims claims = validateToken(token);

@@ -107,7 +107,7 @@ public class ChannelWebSocket {
                 return;
             }
 
-            User creator = userDAO.findById(1); // utilisateur fictif — à remplacer Phase 4
+            User creator = userDAO.findAll().get(0); // utilisateur fictif — à remplacer Phase 4
             if (creator == null) {
                 sendError(session, "Le créateur par défaut n'existe pas en base.");
                 return;

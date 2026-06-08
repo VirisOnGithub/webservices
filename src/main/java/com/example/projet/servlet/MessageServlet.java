@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @WebServlet("/api/channels/*")
 public class MessageServlet extends HttpServlet {
@@ -39,7 +40,7 @@ public class MessageServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-        Integer idc;
+        UUID idc;
 
         String pathInfo = req.getPathInfo();
 
@@ -67,8 +68,8 @@ public class MessageServlet extends HttpServlet {
         }
     }
 
-    private Integer getChannelId(HttpServletResponse resp, String pathInfo) throws IOException {
-        int idc;
+    private UUID getChannelId(HttpServletResponse resp, String pathInfo) throws IOException {
+        UUID idc;
         if (pathInfo == null || pathInfo.equals("/")) {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "L'ID du canal est requis dans l'URL (ex: /api/channels/c1/messages).");
             return null;
@@ -79,16 +80,16 @@ public class MessageServlet extends HttpServlet {
 
         if (segments.length == 3 && "messages".equals(segments[2])) {
             try {
-                idc = Integer.parseInt(segments[1]);
-            } catch (NumberFormatException e) {
-                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "L'ID du canal doit être un entier valide.");
+                return UUID.fromString(segments[1]);
+            } catch (IllegalArgumentException e) {
+                sendError(resp, HttpServletResponse.SC_BAD_REQUEST,
+                        "L'ID du canal doit être un UUID valide.");
                 return null;
             }
         } else {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "URL invalide. Utilisez le format : /api/channels/{idc}/messages");
             return null;
         }
-        return idc;
     }
 
     // 2. POST /api/channels/{idc}/messages : Publier un message dans un canal
@@ -97,7 +98,7 @@ public class MessageServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
-        Integer idc = getChannelId(resp, req.getPathInfo());
+        UUID idc = getChannelId(resp, req.getPathInfo());
 
         try {
             // Lecture du corps JSON de la requête
@@ -110,7 +111,7 @@ public class MessageServlet extends HttpServlet {
             }
 
             String token = JwtUtil.extractToken(req);
-            Integer authorId = Integer.valueOf(Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject());
+            UUID authorId = UUID.fromString(Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject());
             User author = userDAO.findById(authorId);
             if (author == null) {
                 sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "L'auteur par défaut n'existe pas en base.");

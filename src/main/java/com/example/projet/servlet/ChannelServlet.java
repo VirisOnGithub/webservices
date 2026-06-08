@@ -62,7 +62,7 @@ public class ChannelServlet extends HttpServlet {
                 return;
             }
 
-            User creator = userDAO.findById(1); // Utilisateur fictif en attendant la Phase 4
+            User creator = userDAO.findAll().get(0); // Utilisateur fictif en attendant la Phase 4
             if (creator == null) {
                 sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Le créateur par défaut n'existe pas en base.");
                 return;

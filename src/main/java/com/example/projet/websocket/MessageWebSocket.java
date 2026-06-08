@@ -17,17 +17,14 @@ import jakarta.websocket.server.ServerEndpoint;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ServerEndpoint("/ws/channels/{idc}/messages")
 public class MessageWebSocket {
 
     // Sessions isolées par canal — clé = idc du channel
-    private static final Map<Integer, Set<Session>> channelSessions = new ConcurrentHashMap<>();
+    private static final Map<UUID, Set<Session>> channelSessions = new ConcurrentHashMap<>();
 
     private final MessageDAO messageDAO = MessageDAO.getInstance();
     private final ChannelDAO channelDAO = ChannelDAO.getInstance();
@@ -41,7 +38,13 @@ public class MessageWebSocket {
     // -------------------------------------------------------
 
     @OnOpen
-    public void onOpen(Session session, @PathParam("idc") int idc) {
+    public void onOpen(Session session, @PathParam("idc") String idcRaw) {
+        UUID idc;
+        try {
+            idc = UUID.fromString(idcRaw);
+        } catch (IllegalArgumentException e) {
+            return;
+        }
         channelSessions.computeIfAbsent(idc, k -> ConcurrentHashMap.newKeySet()).add(session);
 
         // Envoie la liste des messages dès la connexion — plus besoin d'action GET_MESSAGES côté client
@@ -49,7 +52,13 @@ public class MessageWebSocket {
     }
 
     @OnClose
-    public void onClose(Session session, @PathParam("idc") int idc) {
+    public void onClose(Session session, @PathParam("idc") String idcRaw) {
+        UUID idc;
+        try {
+            idc = UUID.fromString(idcRaw);
+        } catch (IllegalArgumentException e) {
+            return;
+        }
         Set<Session> sessions = channelSessions.get(idc);
         if (sessions != null) {
             sessions.remove(session);
@@ -58,9 +67,13 @@ public class MessageWebSocket {
     }
 
     @OnError
-    public void onError(Session session, Throwable t, @PathParam("idc") int idc) {
+    public void onError(Session session, Throwable t, @PathParam("idc") String idcRaw) {
         System.err.println("[WS] Erreur sur " + session.getId() + " : " + t.getMessage());
-        channelSessions.getOrDefault(idc, Set.of()).remove(session);
+        try {
+            UUID idc = UUID.fromString(idcRaw);
+            channelSessions.getOrDefault(idc, Set.of()).remove(session);
+        } catch (IllegalArgumentException ignored) {
+        }
     }
 
     // -------------------------------------------------------
@@ -68,7 +81,13 @@ public class MessageWebSocket {
     // -------------------------------------------------------
 
     @OnMessage
-    public void onMessage(String raw, Session session, @PathParam("idc") int idc) {
+    public void onMessage(String raw, Session session, @PathParam("idc") String idcRaw) {
+        UUID idc;
+        try {
+            idc = UUID.fromString(idcRaw);
+        } catch (IllegalArgumentException e) {
+            return;
+        }
         System.out.println("[WS] Reçu de " + session.getId() + " sur canal " + idc + " : " + raw);
         try {
             JsonNode node = objectMapper.readTree(raw);
@@ -90,7 +109,7 @@ public class MessageWebSocket {
     // -------------------------------------------------------
 
     /** Envoi de la liste à la connexion — équivalent du doGet */
-    private void handleGetMessages(Session session, int idc) {
+    private void handleGetMessages(Session session, UUID idc) {
         try {
             Channel channel = channelDAO.findById(idc);
             if (channel == null) {
@@ -105,7 +124,7 @@ public class MessageWebSocket {
     }
 
     /** Envoi d'un message + broadcast — équivalent du doPost */
-    private void handleSendMessage(JsonNode payload, Session session, int idc) {
+    private void handleSendMessage(JsonNode payload, Session session, UUID idc) {
         try {
             if (payload == null) {
                 sendError(session, "Le champ 'payload' est obligatoire.");
@@ -119,7 +138,7 @@ public class MessageWebSocket {
                 return;
             }
 
-            Integer authorId = Integer.valueOf(
+            UUID authorId = UUID.fromString(
                     Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject()
             );
             User author = userDAO.findById(authorId);
@@ -188,7 +207,7 @@ public class MessageWebSocket {
         }
     }
 
-    private void broadcast(int idc, String type, Object data) {
+    private void broadcast(UUID idc, String type, Object data) {
         String json;
         try {
             json = objectMapper.writeValueAsString(Map.of("type", type, "data", data));

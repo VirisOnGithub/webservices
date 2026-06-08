@@ -2,15 +2,16 @@ package com.example.projet.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "USERS")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "idu")
-    private Integer idu;
+    private UUID idu;
 
     @Column(name = "pseudo", nullable = false, length = 50)
     private String pseudo;
@@ -31,8 +32,8 @@ public class User {
     public User() {}
 
     // Getters et Setters
-    public Integer getIdu() { return idu; }
-    public void setIdu(Integer idu) { this.idu = idu; }
+    public UUID getIdu() { return idu; }
+    public void setIdu(UUID idu) { this.idu = idu; }
 
     public String getPseudo() { return pseudo; }
     public void setPseudo(String pseudo) { this.pseudo = pseudo; }

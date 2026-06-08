@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import java.util.List;
+import java.util.UUID;
 
 public class MessageDAO {
     private static MessageDAO instance;
@@ -37,7 +38,7 @@ public class MessageDAO {
     }
 
     // Récupérer les messages d'un canal spécifique (très utile pour la phase des servlets)
-    public List<Message> findByChannel(Integer idc) {
+    public List<Message> findByChannel(UUID idc) {
         EntityManager em = getEntityManager();
         try {
             return em.createQuery("SELECT m FROM Message m WHERE m.channel.idc = :idc ORDER BY m.sendDate ASC", Message.class)

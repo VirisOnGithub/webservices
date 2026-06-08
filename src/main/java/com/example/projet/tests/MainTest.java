@@ -45,7 +45,12 @@ public class MainTest {
             // TEST 3 : Lecture des Messages du canal 'Général' (c1)
             // ==========================================================
             System.out.println("\n--- Test 3 : Messages du canal 'Général' ---");
-            List<Message> generalMessages = messageDAO.findByChannel(1);
+            Channel generalChannel = channelDAO.findAll()
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Aucun canal trouvé dans la base"));
+
+            List<Message> generalMessages = messageDAO.findByChannel(generalChannel.getIdc());
             for (Message m : generalMessages) {
                 System.out.println("[" + m.getAuthor().getPseudo() + "] : " + m.getContent());
             }
@@ -56,10 +61,16 @@ public class MainTest {
             System.out.println("\n--- Test 4 : Insertion d'un nouveau message ---");
 
             // On récupère Bob (u2) et le canal Général (c1) pour lier le message
-            User bob = userDAO.findById(2);
-            Channel generalChannel = channelDAO.findById(1);
+            User bob = userDAO.findAll().stream()
+                    .filter(u -> "Bob".equals(u.getPseudo()))
+                    .findFirst()
+                    .orElse(null);
+            Channel firstChannel = channelDAO.findAll()
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
 
-            if (bob != null && generalChannel != null) {
+            if (bob != null && firstChannel != null) {
                 Message newMessage = new Message();
                 newMessage.setContent("Ceci est un message de test généré par JPA !");
                 newMessage.setSendDate(LocalDateTime.now());

@@ -2,15 +2,16 @@ package com.example.projet.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "CHANNEL")
 public class Channel {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "idc")
-    private Integer idc;
+    private UUID idc;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -36,8 +37,8 @@ public class Channel {
     public Channel() {}
 
     // Getters et Setters
-    public Integer getIdc() { return idc; }
-    public void setIdc(Integer idc) { this.idc = idc; }
+    public UUID getIdc() { return idc; }
+    public void setIdc(UUID idc) { this.idc = idc; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import java.util.List;
+import java.util.UUID;
 
 public class ChannelDAO {
     private static ChannelDAO instance;
@@ -32,7 +33,7 @@ public class ChannelDAO {
         }
     }
 
-    public Channel findById(Integer idc) {
+    public Channel findById(UUID idc) {
         try (EntityManager em = getEntityManager()) {
             return em.find(Channel.class, idc);
         }
@@ -52,7 +53,7 @@ public class ChannelDAO {
         }
     }
 
-    public void delete(Integer idc) {
+    public void delete(UUID idc) {
         try (EntityManager em = getEntityManager()) {
             em.getTransaction().begin();
             Channel channel = em.find(Channel.class, idc);

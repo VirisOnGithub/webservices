@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import java.util.List;
+import java.util.UUID;
 
 public class UserDAO {
     private static UserDAO instance;
@@ -36,7 +37,7 @@ public class UserDAO {
     }
 
     // Trouver un utilisateur par son ID
-    public User findById(Integer idu) {
+    public User findById(UUID idu) {
         try (EntityManager em = getEntityManager()) {
             return em.find(User.class, idu);
         }
@@ -59,7 +60,7 @@ public class UserDAO {
     }
 
     // Supprimer un utilisateur
-    public void delete(Integer idu) {
+    public void delete(UUID idu) {
         try (EntityManager em = getEntityManager()) {
             em.getTransaction().begin();
             User user = em.find(User.class, idu);
