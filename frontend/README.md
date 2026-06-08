@@ -1,46 +1,64 @@
-# Astro Starter Kit: Basics
+# Nuxt Starter Template
 
-```sh
-npm create astro@latest -- --template basics
+[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
+
+Use this template to get started with [Nuxt UI](https://ui.nuxt.com) quickly.
+
+- [Live demo](https://starter-template.nuxt.dev/)
+- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
+
+<a href="https://starter-template.nuxt.dev/" target="_blank">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
+    <img alt="Nuxt Starter Template" src="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png" width="830" height="466">
+  </picture>
+</a>
+
+> The starter template for Vue is on https://github.com/nuxt-ui-templates/starter-vue.
+
+## Quick Start
+
+```bash [Terminal]
+npm create nuxt@latest -- -t ui
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Deploy your own
 
-## 🚀 Project Structure
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
 
-Inside of your Astro project, you'll see the following folders and files:
+## Setup
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+Make sure to install the dependencies:
+
+```bash
+pnpm install
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## Development Server
 
-## 🧞 Commands
+Start the development server on `http://localhost:3000`:
 
-All commands are run from the root of the project, from a terminal:
+```bash
+pnpm dev
+```
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Production
 
-## 👀 Want to learn more?
+Build the application for production:
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+```bash
+pnpm build
+```
+
+Locally preview production build:
+
+```bash
+pnpm preview
+```
+
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## Renovate integration
+
+Install [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) on your repository and you are good to go.
