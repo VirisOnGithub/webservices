@@ -6,7 +6,7 @@ const token: CookieRef<string> = useCookie('token')
 
 const id = route.params.id as string
 
-const { messages, error, status, sendMessage } = useMessages(id, token.value)
+const { messages, error, status, sendMessage, editMessage, deleteMessage } = useMessages(id, token.value)
 
 
 // quand un user envoie un message, scroll auto vers le bas pour voir le message
@@ -36,7 +36,7 @@ watch(messages, () => {
 
     <div v-else-if="status === 'open'" class="flex flex-col flex-1 p-4 overflow-y-auto" id="messages-container">
       <div class="mt-auto"></div> <!-- prends l'espace tant qu'il n'y a pas beaucoup de messages -->
-      <Message v-for="message in messages" :key="message.idm" :message="message" />
+      <Message v-for="message in messages" :key="message.idm" :message="message" @delete="deleteMessage" />
     </div>
 
     <div v-else class="flex items-center justify-center flex-1">

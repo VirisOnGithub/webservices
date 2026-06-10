@@ -100,7 +100,8 @@ public class MessageWebSocket {
             switch (node.get("action").asText()) {
                 case "SEND_MESSAGE" -> handleSendMessage(node.get("payload"), session, idc);
                 case "EDIT_MESSAGE" -> handleEditMessage(node.get("payload"), session, idc);
-                default             -> sendError(session, "Action inconnue : " + node.get("action").asText());
+                case "DELETE_MESSAGE" -> handleDeleteMessage(node.get("payload"), session, idc);
+                default -> sendError(session, "Action inconnue : " + node.get("action").asText());
             }
         } catch (Exception e) {
             sendError(session, "Message invalide : " + e.getMessage());
@@ -111,7 +112,9 @@ public class MessageWebSocket {
     // Handlers
     // -------------------------------------------------------
 
-    /** Envoi de la liste à la connexion — équivalent du doGet */
+    /**
+     * Envoi de la liste à la connexion — équivalent du doGet
+     */
     private void handleGetMessages(Session session, UUID idc) {
         try {
             Channel channel = channelDAO.findById(idc);
@@ -126,7 +129,9 @@ public class MessageWebSocket {
         }
     }
 
-    /** Envoi d'un message + broadcast — équivalent du doPost */
+    /**
+     * Envoi d'un message + broadcast — équivalent du doPost
+     */
     private void handleSendMessage(JsonNode payload, Session session, UUID idc) {
         try {
             if (payload == null) {
@@ -238,6 +243,46 @@ public class MessageWebSocket {
 
         } catch (Exception e) {
             sendError(session, "Erreur lors de la modification du message : " + e.getMessage());
+        }
+    }
+
+    private void handleDeleteMessage(JsonNode payload, Session session, UUID idc) {
+        System.out.println("[WS] Suppression de message demandée par " + session.getId() + " : " + payload);
+        if (payload == null || !payload.has("idm")) {
+            sendError(session, "Le champ 'payload' doit contenir 'idm'.");
+            return;
+        }
+
+        try {
+            String token = extractToken(session);
+            if (token == null) {
+                sendError(session, "Token manquant ou invalide.");
+                return;
+            }
+            UUID userId = UUID.fromString(
+                    Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject()
+            );
+            User user = userDAO.findById(userId);
+            if (user == null) {
+                sendError(session, "Utilisateur introuvable.");
+                return;
+            }
+            int idm = payload.get("idm").asInt();
+            Message message = messageDAO.findById(idm);
+            if (message == null) {
+                sendError(session, "Message introuvable.");
+                return;
+            }
+            if (!Objects.equals(message.getAuthor().getIdu(), userId)) {
+                sendError(session, "Vous n'êtes pas l'auteur de ce message.");
+                return;
+            }
+            messageDAO.delete(idm);
+
+            broadcast(idc, "MESSAGE_DELETED", Map.of("idm", idm));
+        } catch (Exception e) {
+            sendError(session, "Erreur lors de la validation du token : " + e.getMessage());
+            return;
         }
     }
 

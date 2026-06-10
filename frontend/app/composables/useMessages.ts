@@ -29,6 +29,9 @@ export function useMessages(channelId: string | string[], token: string) {
           const index = messages.value.findIndex(m => m.idm === msg.data.idm)
           if (index !== -1) messages.value[index] = msg.data
           break
+        case 'MESSAGE_DELETED':
+          messages.value = messages.value.filter(m => m.idm !== msg.data.idm)
+          break
         case 'ERROR':
           error.value = msg.error ?? 'Erreur inconnue'
           break
@@ -65,10 +68,18 @@ export function useMessages(channelId: string | string[], token: string) {
     }))
   }
 
+  const deleteMessage = (idm: number) => {
+    if (ws?.readyState !== WebSocket.OPEN) return
+    ws.send(JSON.stringify({
+      action: 'DELETE_MESSAGE',
+      payload: { idm }
+    }))
+  }
+
   onMounted(connect)
   onUnmounted(() => ws?.close())
 
-  return { messages, error, status, sendMessage, editMessage }
+  return { messages, error, status, sendMessage, editMessage, deleteMessage }
 }
 
 interface Message {
@@ -81,7 +92,7 @@ interface Message {
 }
 
 interface WsMessage {
-  type: 'MESSAGES_LIST' | 'MESSAGE_CREATED' | 'MESSAGE_UPDATED' | 'ERROR'
+  type: 'MESSAGES_LIST' | 'MESSAGE_CREATED' | 'MESSAGE_UPDATED' | 'MESSAGE_DELETED' | 'ERROR'
   data?: any
   error?: string
 }
