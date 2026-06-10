@@ -27,7 +27,10 @@ export function useMessages(channelId: string | string[], token: string) {
           break
         case 'MESSAGE_UPDATED':
           const index = messages.value.findIndex(m => m.idm === msg.data.idm)
-          if (index !== -1) messages.value[index] = msg.data
+          if (index !== -1 && messages.value[index]) {
+            messages.value[index].content = msg.data.content
+            messages.value[index].edited = true
+          }
           break
         case 'MESSAGE_DELETED':
           messages.value = messages.value.filter(m => m.idm !== msg.data.idm)
