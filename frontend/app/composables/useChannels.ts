@@ -65,7 +65,7 @@ export function useChannels(token: string) {
 
 // --- Types ---
 interface Channel {
-  idc: number
+  idc: string
   name: string
   description?: string
   isPublic: boolean
