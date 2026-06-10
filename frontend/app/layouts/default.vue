@@ -1,3 +1,14 @@
+<script setup>
+const token = useCookie('token')
+
+const logout = () => {
+  token.value = null
+  navigateTo('/login')
+}
+
+const { channels, error, status, fetchChannels, createChannel } = useChannels(token.value)
+</script>
+
 <template>
   <div id="app" class="flex h-screen w-screen">
     <div id="sidebar" class="w-62.5 bg-[#2c3e50] text-white flex flex-col">
@@ -42,26 +53,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-// const {fetchData} = useApi()
-// const channels = fetchData({
-//   endpoint: '/channels',
-//   token: token.value
-// })
-//
-// onMounted(async () => {
-//   await channels.fetch();
-// })
-const token = useCookie('token')
-
-const logout = () => {
-  token.value = null
-  navigateTo('/login')
-}
-
-const { channels, error, status, fetchChannels, createChannel } = useChannels()
-</script>
 
 <style scoped>
 </style>

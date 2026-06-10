@@ -11,7 +11,7 @@ import java.util.UUID;
 public class UserDAO {
     private static UserDAO instance;
 
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("journalDeBordPU");
+    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("liscord");
 
     private UserDAO() {}
 

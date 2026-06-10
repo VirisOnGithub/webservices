@@ -18,45 +18,44 @@ public class AttachmentDAO {
         return instance;
     }
 
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("journalDeBordPU");
+    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("liscord");
 
     private EntityManager getEntityManager() { return emf.createEntityManager(); }
 
     public void create(Attachment attachment) {
-        EntityManager em = getEntityManager();
-        try {
+        try (EntityManager em = getEntityManager()) {
             em.getTransaction().begin();
             em.persist(attachment);
             em.getTransaction().commit();
-        } finally { em.close(); }
+        }
     }
 
     public Attachment findById(Integer ida) {
-        EntityManager em = getEntityManager();
-        try { return em.find(Attachment.class, ida); } finally { em.close(); }
+        try (EntityManager em = getEntityManager()) {
+            return em.find(Attachment.class, ida);
+        }
     }
 
     public List<Attachment> findAll() {
-        EntityManager em = getEntityManager();
-        try { return em.createQuery("SELECT a FROM Attachment a", Attachment.class).getResultList(); } finally { em.close(); }
+        try (EntityManager em = getEntityManager()) {
+            return em.createQuery("SELECT a FROM Attachment a", Attachment.class).getResultList();
+        }
     }
 
     public void update(Attachment attachment) {
-        EntityManager em = getEntityManager();
-        try {
+        try (EntityManager em = getEntityManager()) {
             em.getTransaction().begin();
             em.merge(attachment);
             em.getTransaction().commit();
-        } finally { em.close(); }
+        }
     }
 
     public void delete(Integer ida) {
-        EntityManager em = getEntityManager();
-        try {
+        try (EntityManager em = getEntityManager()) {
             em.getTransaction().begin();
             Attachment attachment = em.find(Attachment.class, ida);
             if (attachment != null) em.remove(attachment);
             em.getTransaction().commit();
-        } finally { em.close(); }
+        }
     }
 }

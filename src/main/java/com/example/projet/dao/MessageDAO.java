@@ -19,55 +19,53 @@ public class MessageDAO {
         return instance;
     }
 
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("journalDeBordPU");
+    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("liscord");
 
     private EntityManager getEntityManager() { return emf.createEntityManager(); }
 
     public void create(Message message) {
-        EntityManager em = getEntityManager();
-        try {
+        try (EntityManager em = getEntityManager()) {
             em.getTransaction().begin();
             em.persist(message);
             em.getTransaction().commit();
-        } finally { em.close(); }
+        }
     }
 
     public Message findById(Integer idm) {
-        EntityManager em = getEntityManager();
-        try { return em.find(Message.class, idm); } finally { em.close(); }
+        try (EntityManager em = getEntityManager()) {
+            return em.find(Message.class, idm);
+        }
     }
 
     // Récupérer les messages d'un canal spécifique (très utile pour la phase des servlets)
     public List<Message> findByChannel(UUID idc) {
-        EntityManager em = getEntityManager();
-        try {
+        try (EntityManager em = getEntityManager()) {
             return em.createQuery("SELECT m FROM Message m WHERE m.channel.idc = :idc ORDER BY m.sendDate ASC", Message.class)
                     .setParameter("idc", idc)
                     .getResultList();
-        } finally { em.close(); }
+        }
     }
 
     public List<Message> findAll() {
-        EntityManager em = getEntityManager();
-        try { return em.createQuery("SELECT m FROM Message m", Message.class).getResultList(); } finally { em.close(); }
+        try (EntityManager em = getEntityManager()) {
+            return em.createQuery("SELECT m FROM Message m", Message.class).getResultList();
+        }
     }
 
     public void update(Message message) {
-        EntityManager em = getEntityManager();
-        try {
+        try (EntityManager em = getEntityManager()) {
             em.getTransaction().begin();
             em.merge(message);
             em.getTransaction().commit();
-        } finally { em.close(); }
+        }
     }
 
     public void delete(Integer idm) {
-        EntityManager em = getEntityManager();
-        try {
+        try (EntityManager em = getEntityManager()) {
             em.getTransaction().begin();
             Message message = em.find(Message.class, idm);
             if (message != null) em.remove(message);
             em.getTransaction().commit();
-        } finally { em.close(); }
+        }
     }
 }

@@ -7,6 +7,22 @@ const token: CookieRef<string> = useCookie('token')
 const id = route.params.id as string
 
 const { messages, error, status, sendMessage } = useMessages(id, token.value)
+
+
+// quand un user envoie un message, scroll auto vers le bas pour voir le message
+const scrollToBottom = async () => {
+  await nextTick()
+
+  const container = document.getElementById('messages-container')
+  if (container) {
+    container.scrollTop = container.scrollHeight
+  }
+}
+
+watch(messages, () => {
+  // console.log('Messages updated, scrolling to bottom...')
+  scrollToBottom()
+}, { deep: true })
 </script>
 
 <template>
@@ -18,7 +34,7 @@ const { messages, error, status, sendMessage } = useMessages(id, token.value)
       </div>
     </template>
 
-    <div v-else-if="status === 'open'" class="flex flex-col flex-1 p-4 overflow-y-auto">
+    <div v-else-if="status === 'open'" class="flex flex-col flex-1 p-4 overflow-y-auto" id="messages-container">
       <div class="mt-auto"></div> <!-- prends l'espace tant qu'il n'y a pas beaucoup de messages -->
       <Message v-for="message in messages" :key="message.idm" :message="message" />
     </div>

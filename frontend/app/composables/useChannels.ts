@@ -1,4 +1,4 @@
-export function useChannels() {
+export function useChannels(token: string) {
   const channels = ref<Channel[]>([])
   const error = ref<string | null>(null)
   const status = ref<'connecting' | 'open' | 'closed'>('connecting')
@@ -7,7 +7,7 @@ export function useChannels() {
 
   // --- Connexion ---
   const connect = () => {
-    ws = new WebSocket('ws://localhost:8080/ws/channels')
+    ws = new WebSocket('ws://localhost:8080/ws/channels?token=' + token)
 
     ws.onopen = () => {
       status.value = 'open'

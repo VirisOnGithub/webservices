@@ -3,6 +3,7 @@ package com.example.projet.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
 
 @Entity
 @Table(name = "CHANNEL")
@@ -28,10 +29,18 @@ public class Channel {
     @Column(name = "creation_date", updatable = false)
     private LocalDateTime creationDate;
 
-    // Jointure JPA : Plusieurs canaux peuvent avoir le même utilisateur comme créateur
+    // créateur du channel
     @ManyToOne
     @JoinColumn(name = "idu", nullable = false)
     private User creator;
+
+    @ManyToMany
+    @JoinTable(
+            name = "Belong",
+            joinColumns = @JoinColumn(name = "idc"),
+            inverseJoinColumns = @JoinColumn(name = "idu")
+    )
+    private List<User> members;
 
     // Constructeur requis par JPA
     public Channel() {}

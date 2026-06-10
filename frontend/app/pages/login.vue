@@ -48,9 +48,9 @@ onMounted(() => {
 
 <template>
   <div class="grid place-items-center w-screen h-screen">
-    <!-- From Uiverse.io by Ameth1208 -->
     <div class="relative py-3 sm:max-w-xs sm:mx-auto">
-      <div
+      <form
+        @submit.prevent="onClickLogin"
         class="min-h-96 px-8 py-6 mt-4 text-left bg-white dark:bg-gray-900 rounded-xl shadow-lg"
       >
         <div class="flex flex-col justify-center items-center h-full select-none">
@@ -59,9 +59,9 @@ onMounted(() => {
             <p class="m-0 text-[16px] font-semibold dark:text-white">
               Login to your Account
             </p>
-            <span class="m-0 text-xs max-w-[90%] text-center text-[#8B8E98]"
-            >Get started with our app, just start section and enjoy experience.
-        </span>
+            <span class="m-0 text-xs max-w-[90%] text-center text-[#8B8E98]">
+              Get started with our app, just start section and enjoy experience.
+            </span>
           </div>
           <div class="w-full flex flex-col gap-2">
             <label class="font-semibold text-xs text-gray-400">Username</label>
@@ -83,14 +83,14 @@ onMounted(() => {
         </div>
         <div>
           <button
-            @click="onClickLogin"
+            type="submit"
             class="py-1 px-8 bg-blue-500 hover:bg-blue-800 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg cursor-pointer select-none"
           >
             Login
           </button>
         </div>
         <p class="text-red-600 mt-2 p-4 border border-red-600 bg-red-300 rounded-xl" v-if="error">{{ error }}</p>
-      </div>
+      </form>
     </div>
   </div>
 </template>

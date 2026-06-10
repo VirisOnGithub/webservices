@@ -19,7 +19,7 @@ public class ChannelDAO {
         return instance;
     }
 
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("journalDeBordPU");
+    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("liscord");
 
     private EntityManager getEntityManager() {
         return emf.createEntityManager();
@@ -42,6 +42,15 @@ public class ChannelDAO {
     public List<Channel> findAll() {
         try (EntityManager em = getEntityManager()) {
             return em.createQuery("SELECT c FROM Channel c", Channel.class).getResultList();
+        }
+    }
+
+    public List<Channel> findAuthorizedChannels(UUID idu) {
+        System.out.println("[DAO] findAuthorizedChannels pour user id=" + idu);
+        try (EntityManager em = getEntityManager()) {
+            return em.createQuery("SELECT DISTINCT c FROM Channel c LEFT JOIN c.members u WHERE u.id = :idu OR c.isPublic = true", Channel.class)
+                    .setParameter("idu", idu)
+                    .getResultList();
         }
     }
 

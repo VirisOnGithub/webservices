@@ -4,6 +4,7 @@ import com.example.projet.dao.ChannelDAO;
 import com.example.projet.dao.UserDAO;
 import com.example.projet.model.Channel;
 import com.example.projet.model.User;
+import com.example.projet.util.JwtUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -12,10 +13,10 @@ import jakarta.websocket.server.ServerEndpoint;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.example.projet.util.JwtUtil.extractToken;
 
 @ServerEndpoint("/ws/channels")
 public class ChannelWebSocket {
@@ -84,8 +85,22 @@ public class ChannelWebSocket {
 
     /** Equivalent de doGet — réponse uniquement à l'appelant */
     private void handleGetChannels(Session session) {
+        String token = extractToken(session);
+        if (token == null) {
+            sendError(session, "Token manquant ou invalide.");
+            return;
+        }
+
         try {
-            List<Channel> channels = channelDAO.findAll();
+//            Integer authorId = Integer.valueOf(
+//                    Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject()
+//            );
+
+            UUID authorId = UUID.fromString(
+                    Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject()
+            );
+            List<Channel> channels = channelDAO.findAuthorizedChannels(authorId);
+            System.out.println("[WS] Envoi des canaux à " + session.getId() + " : " + channels.size() + " canaux");
             sendToSession(session, "CHANNELS_LIST", channels);
         } catch (Exception e) {
             sendError(session, "Erreur lors de la récupération des canaux : " + e.getMessage());

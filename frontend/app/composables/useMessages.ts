@@ -25,6 +25,10 @@ export function useMessages(channelId: string | string[], token: string) {
         case 'MESSAGE_CREATED':
           messages.value.push(msg.data)
           break
+        case 'MESSAGE_UPDATED':
+          const index = messages.value.findIndex(m => m.idm === msg.data.idm)
+          if (index !== -1) messages.value[index] = msg.data
+          break
         case 'ERROR':
           error.value = msg.error ?? 'Erreur inconnue'
           break
@@ -38,7 +42,8 @@ export function useMessages(channelId: string | string[], token: string) {
   }
 
   const sendMessage = (content: string, parentMessage?: { idm: number }) => {
-    if (ws?.readyState !== WebSocket.OPEN) return
+    content = content.replaceAll('<br>', '\n').trim()
+    if (ws?.readyState !== WebSocket.OPEN || content.length === 0) return
     ws.send(JSON.stringify({
       action: 'SEND_MESSAGE',
       payload: {
@@ -48,10 +53,22 @@ export function useMessages(channelId: string | string[], token: string) {
     }))
   }
 
+  const editMessage = (idm: number, content: string) => {
+    content = content.replaceAll('<br>', '\n').trim()
+    if (ws?.readyState !== WebSocket.OPEN || content.length === 0) return
+    ws.send(JSON.stringify({
+      action: 'EDIT_MESSAGE',
+      payload: {
+        idm,
+        content
+      }
+    }))
+  }
+
   onMounted(connect)
   onUnmounted(() => ws?.close())
 
-  return { messages, error, status, sendMessage }
+  return { messages, error, status, sendMessage, editMessage }
 }
 
 interface Message {
@@ -64,7 +81,7 @@ interface Message {
 }
 
 interface WsMessage {
-  type: 'MESSAGES_LIST' | 'MESSAGE_CREATED' | 'ERROR'
+  type: 'MESSAGES_LIST' | 'MESSAGE_CREATED' | 'MESSAGE_UPDATED' | 'ERROR'
   data?: any
   error?: string
 }

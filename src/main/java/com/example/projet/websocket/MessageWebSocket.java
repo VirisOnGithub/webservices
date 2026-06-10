@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.example.projet.util.JwtUtil.extractToken;
+
 @ServerEndpoint("/ws/channels/{idc}/messages")
 public class MessageWebSocket {
 
@@ -47,7 +49,7 @@ public class MessageWebSocket {
         }
         channelSessions.computeIfAbsent(idc, k -> ConcurrentHashMap.newKeySet()).add(session);
 
-        // Envoie la liste des messages dès la connexion — plus besoin d'action GET_MESSAGES côté client
+        // envoie les messages dès la connexion au socket
         handleGetMessages(session, idc);
     }
 
@@ -97,6 +99,7 @@ public class MessageWebSocket {
             }
             switch (node.get("action").asText()) {
                 case "SEND_MESSAGE" -> handleSendMessage(node.get("payload"), session, idc);
+                case "EDIT_MESSAGE" -> handleEditMessage(node.get("payload"), session, idc);
                 default             -> sendError(session, "Action inconnue : " + node.get("action").asText());
             }
         } catch (Exception e) {
@@ -131,7 +134,6 @@ public class MessageWebSocket {
                 return;
             }
 
-            // JWT passé en query param : ws://.../messages?token=xxx
             String token = extractToken(session);
             if (token == null) {
                 sendError(session, "Token manquant ou invalide.");
@@ -182,20 +184,67 @@ public class MessageWebSocket {
         }
     }
 
+    private void handleEditMessage(JsonNode payload, Session session, UUID idc) {
+        System.out.println("[WS] Modification de message demandée par " + session.getId() + " : " + payload);
+        if (payload == null || !payload.has("idm") || !payload.has("content")) {
+            sendError(session, "Le champ 'payload' doit contenir 'idm' et 'content'.");
+            return;
+        }
+
+        try {
+            String token = extractToken(session);
+            if (token == null) {
+                sendError(session, "Token manquant ou invalide.");
+                return;
+            }
+
+//            Integer userId = Integer.valueOf(
+//                    Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject()
+//            );
+
+            UUID userId = UUID.fromString(
+                    Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject()
+            );
+            User user = userDAO.findById(userId);
+            if (user == null) {
+                sendError(session, "Utilisateur introuvable.");
+                return;
+            }
+
+            int idm = payload.get("idm").asInt();
+            String newContent = payload.get("content").asText();
+
+            Message message = messageDAO.findById(idm);
+            if (message == null) {
+                sendError(session, "Message introuvable.");
+                return;
+            }
+            if (!Objects.equals(message.getAuthor().getIdu(), userId)) {
+                sendError(session, "Vous n'êtes pas l'auteur de ce message.");
+                return;
+            }
+            if (newContent.trim().isEmpty()) {
+                sendError(session, "Le contenu du message ne peut pas être vide.");
+                return;
+            }
+
+            message.setContent(newContent);
+            message.setEdited(true);
+            message.setEditDate(LocalDateTime.now());
+            messageDAO.update(message);
+
+            // Broadcast uniquement aux clients du même canal
+            broadcast(idc, "MESSAGE_UPDATED", message);
+
+        } catch (Exception e) {
+            sendError(session, "Erreur lors de la modification du message : " + e.getMessage());
+        }
+    }
+
     // -------------------------------------------------------
     // Utilitaires
     // -------------------------------------------------------
 
-    /** Extrait le token JWT depuis ?token=xxx dans l'URL de connexion */
-    private String extractToken(Session session) {
-        String query = session.getQueryString(); // "token=eyJ..."
-        if (query == null) return null;
-        for (String param : query.split("&")) {
-            String[] kv = param.split("=", 2);
-            if (kv.length == 2 && "token".equals(kv[0])) return kv[1];
-        }
-        return null;
-    }
 
     private void sendToSession(Session session, String type, Object data) {
         try {
