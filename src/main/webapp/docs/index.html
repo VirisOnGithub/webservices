@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liscord - Documentation API</title>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <style>
+        html {
+            box-sizing: border-box;
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: scroll;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+        body {
+            margin: 0;
+            background: #fafafa;
+        }
+        /* Custom Liscord Brand Header */
+        .swagger-ui .topbar {
+            background-color: #1e1f22;
+            padding: 12px 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+        .swagger-ui .topbar a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        .swagger-ui .topbar-wrapper::before {
+            content: "🧠 Liscord API Docs";
+            color: #ffffff;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-weight: 700;
+            font-size: 1.35rem;
+            margin-right: auto;
+            letter-spacing: -0.02em;
+        }
+        .swagger-ui .topbar-wrapper img {
+            display: none; /* Hide default swagger logo */
+        }
+    </style>
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js" charset="UTF-8"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
+    <script>
+        window.onload = function() {
+            const ui = SwaggerUIBundle({
+                url: "openapi.yaml",
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout"
+            });
+            window.ui = ui;
+        };
+    </script>
+</body>
+</html>
