@@ -35,10 +35,6 @@ public class MessageWebSocket {
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-    // -------------------------------------------------------
-    // Cycle de vie
-    // -------------------------------------------------------
-
     @OnOpen
     public void onOpen(Session session, @PathParam("idc") String idcRaw) {
         UUID idc;
@@ -78,9 +74,8 @@ public class MessageWebSocket {
         }
     }
 
-    // -------------------------------------------------------
-    // Réception des messages
-    // -------------------------------------------------------
+
+    // réception des messages
 
     @OnMessage
     public void onMessage(String raw, Session session, @PathParam("idc") String idcRaw) {
@@ -273,7 +268,7 @@ public class MessageWebSocket {
                 sendError(session, "Message introuvable.");
                 return;
             }
-            if (!Objects.equals(message.getAuthor().getIdu(), userId)) {
+            if (!Objects.equals(message.getAuthor().getIdu(), userId) && !Objects.equals(message.getChannel().getCreator().getIdu(), userId)) {
                 sendError(session, "Vous n'êtes pas l'auteur de ce message.");
                 return;
             }

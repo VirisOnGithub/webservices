@@ -44,6 +44,7 @@ export const useApi = () => {
 
       try {
         const uri = useBaseEndpoint ? `${baseEndpoint}${endpoint}` : `${baseURL}${endpoint}`
+        console.log(`Fetching: ${method} ${uri}`)
         if (method == 'GET') {
           data.value = await $fetch(uri, {
             method,

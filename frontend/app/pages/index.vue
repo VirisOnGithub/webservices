@@ -1,5 +1,5 @@
 <template>
-  <p>Oh c'est beau !</p>
+
 </template>
 
 <script setup>

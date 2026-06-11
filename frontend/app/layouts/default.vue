@@ -7,6 +7,28 @@ const logout = () => {
 }
 
 const { channels, error, status, fetchChannels, createChannel } = useChannels(token.value)
+
+const { fetchData } = useApi()
+
+const userId = useState('userId', () => null)
+
+const userData = fetchData({
+  endpoint: '/user/@me',
+  useBaseEndpoint: true,
+  token: useCookie('token').value
+})
+
+onMounted(async () => {
+  await userData.fetch()
+
+  if (userData.data.value.idu) {
+    userId.value = userData.data.value.idu
+  }
+  if (userData.error.value) {
+    console.error('Failed to fetch user data:', userData.error.value)
+    logout()
+  }
+})
 </script>
 
 <template>
@@ -38,7 +60,9 @@ const { channels, error, status, fetchChannels, createChannel } = useChannels(to
         </p>
       </div>
 
-      <div class="w-full mt-auto flex items-center justify-center p-5">
+      <div class="w-full mt-auto flex flex-col items-center justify-center p-5">
+        <UserBadge :user="userData.data" />
+
         <button
           class="border p-4 rounded-xl cursor-pointer hover:bg-white hover:text-[#2c3e50]"
           @click="logout"

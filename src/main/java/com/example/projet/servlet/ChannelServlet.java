@@ -14,14 +14,12 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @WebServlet("/api/channels")
 public class ChannelServlet extends HttpServlet {
 
     private final ChannelDAO channelDAO = ChannelDAO.getInstance();
-    private final UserDAO userDAO = UserDAO.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
             .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -44,47 +42,6 @@ public class ChannelServlet extends HttpServlet {
             out.flush();
         } catch (Exception e) {
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erreur lors de la récupération des canaux." + e.getMessage());
-        }
-    }
-
-    // 2. POST /api/channels -> Créer un nouveau canal
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
-        try {
-            // Jackson lit le flux d'entrée de la requête et crée l'objet Channel
-            Channel channelInput = objectMapper.readValue(req.getInputStream(), Channel.class);
-
-            if (channelInput.getName() == null) {
-                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Le champ 'name' est obligatoire.");
-                return;
-            }
-
-            User creator = userDAO.findAll().get(0); // Utilisateur fictif en attendant la Phase 4
-            if (creator == null) {
-                sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Le créateur par défaut n'existe pas en base.");
-                return;
-            }
-
-            Channel newChannel = new Channel();
-            newChannel.setName(channelInput.getName());
-            newChannel.setDescription(channelInput.getDescription());
-            newChannel.setIsPublic(channelInput.getIsPublic() != null ? channelInput.getIsPublic() : true);
-            newChannel.setUrl(channelInput.getUrl());
-            newChannel.setCreationDate(LocalDateTime.now());
-            newChannel.setCreator(creator);
-
-            channelDAO.create(newChannel);
-
-            resp.setStatus(HttpServletResponse.SC_CREATED);
-            PrintWriter out = resp.getWriter();
-            out.print(objectMapper.writeValueAsString(newChannel));
-            out.flush();
-
-        } catch (Exception e) {
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erreur lors de la création du canal : " + e.getMessage());
         }
     }
 

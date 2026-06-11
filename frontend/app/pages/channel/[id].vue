@@ -8,6 +8,22 @@ const id = route.params.id as string
 
 const { messages, error, status, sendMessage, editMessage, deleteMessage } = useMessages(id, token.value)
 
+const { fetchData } = useApi()
+
+const channelData = fetchData({
+  endpoint: `/channels/${id}`,
+  useBaseEndpoint: true,
+  token: token.value
+})
+
+const channelOwnerId = computed(() => channelData.data.value?.creator?.idu)
+
+onMounted(async () => {
+  await channelData.fetch()
+  if (channelData.error.value) {
+    console.error('Failed to fetch channel data:', channelData.error.value)
+  }
+})
 
 // quand un user envoie un message, scroll auto vers le bas pour voir le message
 const scrollToBottom = async () => {
@@ -36,7 +52,7 @@ watch(messages, () => {
 
     <div v-else-if="status === 'open'" class="flex flex-col flex-1 p-4 overflow-y-auto" id="messages-container">
       <div class="mt-auto"></div> <!-- prends l'espace tant qu'il n'y a pas beaucoup de messages -->
-      <Message v-for="message in messages" :key="message.idm" :message="message" @delete="deleteMessage" @update="editMessage" />
+      <Message v-for="message in messages" :key="message.idm" :message="message" :channelOwnerId="channelOwnerId" @delete="deleteMessage" @update="editMessage" />
     </div>
 
     <div v-else class="flex items-center justify-center flex-1">

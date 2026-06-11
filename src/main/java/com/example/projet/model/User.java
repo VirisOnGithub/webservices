@@ -1,5 +1,6 @@
 package com.example.projet.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class User {
     private String email;
 
     @Column(name = "password", nullable = false, length = 255)
+    @JsonIgnore // jamais envoyer le mdp au client dans tous les cas
     private String password;
 
     @Column(name = "avatar", length = 255)

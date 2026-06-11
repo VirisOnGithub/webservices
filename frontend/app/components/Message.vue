@@ -6,6 +6,10 @@ const props = defineProps({
   message: {
     type: Object,
     required: true
+  },
+  channelOwnerId: {
+    type: Number,
+    required: true
   }
 })
 
@@ -36,6 +40,12 @@ const updateMessage = (content: string) => {
 }
 
 const is_editing = ref(false)
+
+const userId = useState('userId').value
+
+const canAction = computed(() => {
+  return userId === message.author.idu || props.channelOwnerId === userId
+})
 </script>
 
 <template>
@@ -63,7 +73,7 @@ const is_editing = ref(false)
 
     <!--  tooltip -->
     <div class="absolute right-0 top-0 -translate-y-1/2 hidden"
-         :class="{ 'block!': messageHover }">
+         :class="{ 'block!': messageHover }" v-if="canAction">
       <MessageTooltip @delete="deleteMsg" @request_edit="() => is_editing = true"/>
     </div>
   </div>
