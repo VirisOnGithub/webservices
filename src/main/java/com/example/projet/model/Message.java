@@ -37,11 +37,6 @@ public class Message {
     @JoinColumn(name = "idc", nullable = false)
     private Channel channel;
 
-    // Pièce jointe optionnelle (ida)
-    @ManyToOne
-    @JoinColumn(name = "ida")
-    private Attachment attachment;
-
     // Message parent en cas de réponse / fil de discussion (idm_2)
     @ManyToOne
     @JoinColumn(name = "idm_2")
@@ -80,9 +75,6 @@ public class Message {
 
     public Channel getChannel() { return channel; }
     public void setChannel(Channel channel) { this.channel = channel; }
-
-    public Attachment getAttachment() { return attachment; }
-    public void setAttachment(Attachment attachment) { this.attachment = attachment; }
 
     public Message getParentMessage() { return parentMessage; }
     public void setParentMessage(Message parentMessage) { this.parentMessage = parentMessage; }

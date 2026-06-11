@@ -73,7 +73,7 @@ export const useApi = () => {
         navigateTo('/login')
         useState('toast').value = {
           type: 'error',
-          message: 'Une erreur est survenue lors de la communication avec le serveur. Veuillez vous reconnecter.'
+          message: 'Une erreur est survenue lors de la communication avec le serveur. Veuillez vous reconnecter.' + error.value
         }
       } finally {
         loading.value = false

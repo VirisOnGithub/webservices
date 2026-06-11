@@ -43,6 +43,26 @@ public class MessageWebSocket {
         } catch (IllegalArgumentException e) {
             return;
         }
+
+        String token = extractToken(session);
+        if (token == null) {
+            sendError(session, "Token manquant ou invalide.");
+            return;
+        }
+
+        UUID authorId = UUID.fromString(
+                Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject()
+        );
+
+        if (!checkIfAuthorized(authorId, idc)) {
+            try {
+                session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "Accès refusé au canal."));
+            } catch (IOException e) {
+                System.err.println("[WS] Erreur lors de la fermeture de la session : " + e.getMessage());
+            }
+            return;
+        }
+
         channelSessions.computeIfAbsent(idc, k -> ConcurrentHashMap.newKeySet()).add(session);
 
         // envoie les messages dès la connexion au socket
@@ -320,5 +340,14 @@ public class MessageWebSocket {
         } catch (IOException e) {
             System.err.println("[WS] Impossible d'envoyer l'erreur.");
         }
+    }
+
+    private boolean checkIfAuthorized(UUID userId, UUID channelId) {
+        return true;
+//        Channel channel = channelDAO.findById(channelId);
+//        if (channel == null) return false;
+//        System.out.println("Channel members : " + channel.getMembers().stream().map(User::getPseudo).toList());
+//        return Objects.equals(channel.getCreator().getIdu(), userId) ||
+//                channel.getMembers().stream().anyMatch(m -> Objects.equals(m.getIdu(), userId));
     }
 }

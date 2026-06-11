@@ -66,4 +66,7 @@ public class Channel {
 
     public User getCreator() { return creator; }
     public void setCreator(User creator) { this.creator = creator; }
+//
+//    public List<User> getMembers() { return members; }
+//    public void setMembers(List<User> members) { this.members = members; }
 }

@@ -1,6 +1,7 @@
 package com.example.projet.dao;
 
 import com.example.projet.model.Channel;
+import com.example.projet.model.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;

@@ -33,6 +33,10 @@ public class ChannelServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
+        System.out.println(
+                "[Servlet] GET /api/channels - Headers: " + req.getHeaderNames().asIterator().toString()
+        );
+
         try {
             String token = extractToken(req);
 
@@ -41,7 +45,15 @@ public class ChannelServlet extends HttpServlet {
                     Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject()
             );
 
+            System.out.println(
+                    "[Servlet] User ID extrait du token: " + userId
+            );
+
             List<Channel> channels = channelDAO.findAuthorizedChannels(userId);
+
+            System.out.println(
+                    "[Servlet] Canaux récupérés pour l'utilisateur " + userId + ": " + channels.size()
+            );
 
             // Jackson convertit la liste en chaîne JSON
             String jsonResult = objectMapper.writeValueAsString(channels);
@@ -51,6 +63,9 @@ public class ChannelServlet extends HttpServlet {
             out.print(jsonResult);
             out.flush();
         } catch (Exception e) {
+            System.out.println(
+                    "[Servlet] Erreur lors de la récupération des canaux: " + e.getMessage()
+            );
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erreur lors de la récupération des canaux." + e.getMessage());
         }
     }
