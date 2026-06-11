@@ -1,0 +1,433 @@
+openapi: 3.0.3
+info:
+  title: Liscord - Documentation de l'API
+  description: |
+    Cette documentation décrit les API REST et l'endpoint WebSocket de l'application **Liscord** (Journal de Bord - Messagerie).
+    
+    ### Authentification JWT
+    La plupart des endpoints sous `/api/*` requièrent une authentification via un jeton JWT passé dans l'en-tête `Authorization`.
+    Exemple : `Authorization: Bearer <votre_token>`
+    
+    ### WebSocket
+    L'endpoint WebSocket permet l'envoi et la réception de messages en temps réel. L'authentification se fait en passant le token JWT dans la query string :
+    `ws://localhost:8080/ws/channels/{idc}/messages?token=<votre_token>`
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Serveur de développement local
+tags:
+  - name: Authentification
+    description: Point de connexion et d'obtention de jetons
+  - name: API
+    description: Accès aux ressources REST (utilisateurs, salons, avatars)
+  - name: Websocket
+    description: Connexion persistante bidirectionnelle pour la messagerie en temps réel
+paths:
+  /login:
+    get:
+      tags:
+        - Authentification
+      summary: Authentification de l'utilisateur
+      description: Permet à un utilisateur de se connecter en fournissant son pseudonyme et son mot de passe en paramètres de requête pour obtenir un token JWT.
+      parameters:
+        - name: username
+          in: query
+          required: true
+          description: Le pseudonyme de l'utilisateur
+          schema:
+            type: string
+        - name: password
+          in: query
+          required: true
+          description: Le mot de passe de l'utilisateur
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Connexion réussie, renvoie le jeton d'accès JWT.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Jeton JWT à utiliser pour les requêtes authentifiées.
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '401':
+          description: Identifiants incorrects ou invalides.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Identifiants invalides
+  /api/user/@me:
+    get:
+      tags:
+        - API
+      summary: Obtenir le profil de l'utilisateur connecté
+      description: Retourne les détails de l'utilisateur actuellement authentifié par le jeton JWT.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profil utilisateur récupéré.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Jeton manquant ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Utilisateur non trouvé dans la base de données.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Utilisateur non trouvé.
+  /api/channels:
+    get:
+      tags:
+        - API
+      summary: Récupérer les salons autorisés
+      description: Retourne la liste de tous les salons de discussion (publics ou privés dont l'utilisateur fait partie).
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Liste des salons.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Channel'
+        '401':
+          description: Jeton manquant ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur lors de la récupération.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/channels/{channelId}:
+    get:
+      tags:
+        - API
+      summary: Récupérer les détails d'un salon spécifique
+      description: Retourne les détails complets d'un salon identifié par son UUID.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          description: L'UUID unique du salon
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détails du salon.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Channel'
+        '400':
+          description: ID du salon manquant ou invalide.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: ID de canal manquant.
+        '401':
+          description: Jeton manquant ou invalide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne lors de la récupération du salon.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/avatars:
+    get:
+      tags:
+        - API
+      summary: Télécharger l'avatar d'un utilisateur
+      description: Renvoie le fichier image de l'avatar spécifié par le nom du fichier. Cet endpoint est sécurisé par JWT.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: filename
+          in: query
+          required: true
+          description: "Nom de fichier de l'image (ex: alice.jpg)"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Image de l'avatar.
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Nom de fichier invalide (vide, suspect, etc.).
+        '401':
+          description: Jeton manquant ou invalide.
+        '404':
+          description: Image ou fichier introuvable.
+
+  # Section pour décrire la WebSocket de manière informative dans Swagger
+  /ws/channels/{idc}/messages:
+    trace:
+      tags:
+        - Websocket
+      summary: Connexion WebSocket pour les messages (Temps Réel)
+      description: |
+        Établit une connexion WebSocket persistante bidirectionnelle pour échanger des messages en temps réel au sein d'un salon spécifique.
+        
+        ### Paramètres requis
+        * **idc** (path parameter) : L'UUID du salon auquel s'abonner et envoyer des messages.
+        * **token** (query parameter) : Le jeton JWT de l'utilisateur pour l'authentification.
+        
+        ### Protocole et Handshake
+        L'URL de connexion se présente ainsi :
+        `ws://<serveur>:<port>/Projet-1.0-SNAPSHOT/ws/channels/{idc}/messages?token=<JWT_TOKEN>`
+        
+        ---
+        
+        ### Flux de Messages Poussés par le Serveur (Server-to-Client)
+        
+        Dès la connexion, le serveur envoie automatiquement la liste des messages existants du salon. De plus, il diffuse en temps réel les événements d'activité.
+        
+        #### 1. Liste Initiale des Messages (`MESSAGES_LIST`)
+        Envoyée dès l'ouverture de la session.
+        ```json
+        {
+          "type": "MESSAGES_LIST",
+          "data": [
+            {
+              "idm": 42,
+              "content": "Bonjour à tous !",
+              "sendDate": "2026-06-12T00:05:00",
+              "edited": false,
+              "editDate": null,
+              "author": { "idu": "...", "pseudo": "Alice", ... },
+              "channel": { "idc": "...", "name": "Général", ... },
+              "parentMessage": null
+            }
+          ]
+        }
+        ```
+        
+        #### 2. Message Créé (`MESSAGE_CREATED`)
+        Diffusé à tous les membres connectés lorsqu'un nouveau message est posté dans le salon.
+        ```json
+        {
+          "type": "MESSAGE_CREATED",
+          "data": {
+            "idm": 43,
+            "content": "Comment allez-vous ?",
+            "sendDate": "2026-06-12T00:06:00",
+            "edited": false,
+            "editDate": null,
+            "author": { ... },
+            "channel": { ... },
+            "parentMessage": null
+          }
+        }
+        ```
+        
+        #### 3. Message Modifié (`MESSAGE_UPDATED`)
+        Diffusé lorsqu'un message existant est édité.
+        ```json
+        {
+          "type": "MESSAGE_UPDATED",
+          "data": {
+            "idm": 43,
+            "content": "Comment allez-vous tous ?",
+            "sendDate": "2026-06-12T00:06:00",
+            "edited": true,
+            "editDate": "2026-06-12T00:07:00",
+            "author": { ... },
+            "channel": { ... },
+            "parentMessage": null
+          }
+        }
+        ```
+        
+        #### 4. Message Supprimé (`MESSAGE_DELETED`)
+        Diffusé lorsqu'un message est supprimé.
+        ```json
+        {
+          "type": "MESSAGE_DELETED",
+          "data": {
+            "idm": 43
+          }
+        }
+        ```
+        
+        #### 5. Notification d'Erreur (`ERROR`)
+        Envoyée à la session concernée en cas d'erreur de traitement.
+        ```json
+        {
+          "type": "ERROR",
+          "error": "Le contenu du message ne peut pas être vide."
+        }
+        ```
+        
+        ---
+        
+        ### Flux de Messages Envoyés par le Client (Client-to-Server)
+        
+        Le client doit envoyer des trames texte au format JSON contenant une propriété `action` et une propriété `payload`.
+        
+        #### A. Envoyer un message (`SEND_MESSAGE`)
+        Permet d'envoyer un message simple ou une réponse.
+        ```json
+        {
+          "action": "SEND_MESSAGE",
+          "payload": {
+            "content": "Texte du message",
+            "parentMessage": {
+              "idm": 42
+            }
+          }
+        }
+        ```
+        *(Note : `parentMessage` est facultatif et sert à répondre à un fil).*
+        
+        #### B. Modifier un message (`EDIT_MESSAGE`)
+        Permet de modifier le contenu d'un message dont on est l'auteur.
+        ```json
+        {
+          "action": "EDIT_MESSAGE",
+          "payload": {
+            "idm": 43,
+            "content": "Nouveau texte modifié"
+          }
+        }
+        ```
+        
+        #### C. Supprimer un message (`DELETE_MESSAGE`)
+        Permet de supprimer un message (par son auteur ou le créateur du salon).
+        ```json
+        {
+          "action": "DELETE_MESSAGE",
+          "payload": {
+            "idm": 43
+          }
+        }
+        ```
+      parameters:
+        - name: idc
+          in: path
+          required: true
+          description: L'UUID du salon
+          schema:
+            type: string
+            format: uuid
+        - name: token
+          in: query
+          required: true
+          description: Le jeton JWT d'authentification
+          schema:
+            type: string
+      responses:
+        '101':
+          description: Protocol Upgrade réussi vers WebSocket.
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Passer le token JWT retourné lors du login sous la forme `Bearer <votre_token>` dans le header `Authorization`.
+  schemas:
+    User:
+      type: object
+      properties:
+        idu:
+          type: string
+          format: uuid
+          description: Identifiant unique de l'utilisateur.
+          example: 4a3e7cf1-9b16-4d7a-80c1-37f2a1b9c2d3
+        pseudo:
+          type: string
+          description: Pseudo unique.
+          example: Alice
+        email:
+          type: string
+          format: email
+          description: Adresse e-mail.
+          example: alice@example.com
+        avatar:
+          type: string
+          description: Nom ou URL du fichier de l'avatar.
+          example: alice.jpg
+        inscriptionDate:
+          type: string
+          format: date-time
+          description: Date et heure de l'inscription.
+          example: '2026-06-12T00:05:00'
+    Channel:
+      type: object
+      properties:
+        idc:
+          type: string
+          format: uuid
+          description: Identifiant unique du salon.
+          example: c9eb7f6d-3f0e-42c2-8417-21b0e01c13d8
+        name:
+          type: string
+          description: Nom du salon.
+          example: Général
+        description:
+          type: string
+          description: Description textuelle du salon.
+          example: Salon de discussion général pour l'équipe.
+        isPublic:
+          type: boolean
+          description: Indique si le salon est public ou privé.
+          example: true
+        url:
+          type: string
+          description: URL ou ressource associée au salon.
+          nullable: true
+          example: null
+        creationDate:
+          type: string
+          format: date-time
+          description: Date et heure de création du salon.
+          example: '2026-06-12T00:01:00'
+        creator:
+          $ref: '#/components/schemas/User'
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Message décrivant l'erreur survenue.
+          example: Token invalide
