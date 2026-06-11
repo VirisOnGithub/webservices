@@ -1,9 +1,8 @@
 package com.example.projet.servlet;
 
 import com.example.projet.dao.ChannelDAO;
-import com.example.projet.dao.UserDAO;
 import com.example.projet.model.Channel;
-import com.example.projet.model.User;
+import com.example.projet.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper; // <-- Import Jackson
 
 import jakarta.servlet.ServletException;
@@ -15,6 +14,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+import static com.example.projet.util.JwtUtil.extractToken;
 
 @WebServlet("/api/channels")
 public class ChannelServlet extends HttpServlet {
@@ -31,7 +34,14 @@ public class ChannelServlet extends HttpServlet {
         resp.setCharacterEncoding("UTF-8");
 
         try {
-            List<Channel> channels = channelDAO.findAll();
+            String token = extractToken(req);
+
+
+            UUID userId = UUID.fromString(
+                    Objects.requireNonNull(JwtUtil.validateToken(token)).getSubject()
+            );
+
+            List<Channel> channels = channelDAO.findAuthorizedChannels(userId);
 
             // Jackson convertit la liste en chaîne JSON
             String jsonResult = objectMapper.writeValueAsString(channels);

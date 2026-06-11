@@ -6,8 +6,6 @@ const logout = () => {
   navigateTo('/login')
 }
 
-const { channels, error, status, fetchChannels, createChannel } = useChannels(token.value)
-
 const { fetchData } = useApi()
 
 const userId = useState('userId', () => null)
@@ -18,16 +16,36 @@ const userData = fetchData({
   token: useCookie('token').value
 })
 
-onMounted(async () => {
-  await userData.fetch()
+const channelData = fetchData({
+  endpoint: '/channels',
+  useBaseEndpoint: true,
+  token: useCookie('token').value
+})
 
-  if (userData.data.value.idu) {
-    userId.value = userData.data.value.idu
-  }
-  if (userData.error.value) {
-    console.error('Failed to fetch user data:', userData.error.value)
-    logout()
-  }
+onMounted(async () => {
+  await (async () => {
+    await userData.fetch()
+
+    if (userData.data.value.idu) {
+      userId.value = userData.data.value.idu
+    }
+    if (userData.error.value) {
+      console.error('Failed to fetch user data:', userData.error.value)
+      logout()
+    }
+  })();
+
+  await (async () => {
+    await channelData.fetch()
+
+    if (channelData.error.value) {
+      console.error('Failed to fetch channels:', channelData.error.value)
+    }
+
+    if (channelData.data.value) {
+      console.log('Channels fetched successfully:', channelData.data.value)
+    }
+  })();
 })
 </script>
 
@@ -40,7 +58,13 @@ onMounted(async () => {
         <h1 id="logo_title" class="text-2xl font-bold">Liscord</h1>
       </div>
 
-      <template v-if="status === 'connecting' || (status === 'open' && channels.length === 0)">
+      <ul v-if="channelData.data">
+        <li v-for="channel in channelData.data.value" :key="channel.idc">
+          <Channel :channel="channel"/>
+        </li>
+      </ul>
+
+      <template v-else-if="channelData.loading">
         <div class="channel_skeleton" v-for="i in 5" :key="i">
           <div class="flex items-center gap-4">
             <USkeleton class="h-5 w-62.5 m-5"/>
@@ -48,13 +72,7 @@ onMounted(async () => {
         </div>
       </template>
 
-      <ul v-else-if="status === 'open' && channels.length > 0">
-        <li v-for="channel in channels" :key="channel.idc">
-          <Channel :channel="channel"/>
-        </li>
-      </ul>
-
-      <div v-else-if="status === 'closed' || error">
+      <div v-else-if="channelData.error" class="w-full mt-auto flex flex-col items-center justify-center p-5">
         <p class="text-red-500 text-center mt-4">
           {{ error ?? 'Connexion perdue, reconnexion...' }}
         </p>
