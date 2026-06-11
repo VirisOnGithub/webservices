@@ -1,0 +1,15 @@
+Users(<u>idu</u>, pseudo, email, password, avatar, inscriptionDate)
+<br>
+Channel(<u>idc</u>, name, description, isPublic, url, creationDate, #idu)
+<br>
+Message(<u>idm</u>, content, sendDate, edited, editDate, #idu, #idc, #idm_2)
+<br>
+belong(<u>#idu</u>, <u>#idc</u>)
+<br>
+#idu référence Users(idu)
+<br>
+#idc référence Channel(idc)
+<br>
+#idm_2 référence Message(idm)
+<br>
+#idm référence Message(idm)

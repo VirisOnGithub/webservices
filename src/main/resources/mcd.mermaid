@@ -1,0 +1,31 @@
+%%{init: {"flowchart": {"htmlLabels": true, "curve": "basis"}} }%%
+flowchart LR
+
+    Users["<div style='padding:8px 14px 18px 14px; line-height:1.35'><b>Users</b><hr/><u>idu</u><br/>pseudo<br/>email<br/>password<br/>avatar<br/>inscriptionDate</div>"]
+
+    Channel["<div style='padding:8px 14px 18px 14px; line-height:1.35'><b>Channel</b><hr/><u>idc</u><br/>name<br/>description<br/>isPublic<br/>url<br/>creationDate</div>"]
+
+    Message["<div style='padding:8px 14px 18px 14px; line-height:1.35'><b>Message</b><hr/><u>idm</u><br/>content<br/>sendDate<br/>edited<br/>editDate</div>"]
+
+    create(["<b>create</b>"])
+    write(["<b>write</b>"])
+    contain(["<b>contain</b>"])
+    belong(["<b>belong</b>"])
+
+    Users ---|"0,n"| create
+    create ---|"1,1"| Channel
+
+    Users ---|"0,n"| write
+    write ---|"1,1"| Message
+
+    Channel ---|"0,n"| contain
+    contain ---|"1,1"| Message
+
+    Users ---|"0,n"| belong
+    belong ---|"0,n"| Channel
+
+    classDef entity fill:#fff68a,stroke:#222,stroke-width:1px,color:#000;
+    classDef assoc fill:#00dfe8,stroke:#222,stroke-width:1px,color:#000;
+
+    class Users,Channel,Message entity;
+    class create,write,contain,belong,react,attach,reply assoc;
