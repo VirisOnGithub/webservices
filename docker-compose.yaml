@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:15
+    container_name: im_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: webuser
+      POSTGRES_PASSWORD: webpass
+      POSTGRES_DB: webservices
+    # ports:
+    #   - "5432:5432"
+    volumes:
+      # On force l'ordre d'exécution en ajoutant les préfixes 01- et 02-
+      - ./src/main/resources/tables.sql:/docker-entrypoint-initdb.d/01-tables.sql
+      - ./src/main/resources/fill_tables.sql:/docker-entrypoint-initdb.d/02-fill_tables.sql
+      # Optionnel mais recommandé : un volume pour persister les données de la base
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - im-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: im_backend
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      # Ces variables doivent être lues par ton code Java (ex: dans ton persistence.xml ou application.properties)
+      # Remarque que l'URL utilise "db", le nom du service Docker !
+      - DB_URL=jdbc:postgresql://db:5432/webservices
+      - DB_USER=webuser
+      - DB_PASSWORD=webpass
+    networks:
+      - im-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: im_frontend
+    restart: always
+    ports:
+      - "2809:3000"
+    depends_on:
+      - backend
+    environment:
+      # Variable d'environnement pour que ton Nuxt sache où taper
+      - NUXT_PUBLIC_API_BASE=http://localhost:8080
+    networks:
+      - im-network
+
+# Déclaration du réseau partagé
+networks:
+  im-network:
+    driver: bridge
+
+# Déclaration du volume persistant pour la DB
+volumes:
+  pgdata:

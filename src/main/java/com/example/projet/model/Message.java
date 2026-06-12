@@ -42,44 +42,71 @@ public class Message {
     @JoinColumn(name = "idm_2")
     private Message parentMessage;
 
-    // Jointure ManyToMany pour la table "react" (les utilisateurs qui ont réagi à ce message)
-    @ManyToMany
-    @JoinTable(
-            name = "react",
-            joinColumns = @JoinColumn(name = "idm"),
-            inverseJoinColumns = @JoinColumn(name = "idu")
-    )
-    @JsonIgnore
-    private List<User> reactors = new ArrayList<>();
-
-    public Message() {}
+    public Message() {
+    }
 
     // Getters et Setters
-    public Integer getIdm() { return idm; }
-    public void setIdm(Integer idm) { this.idm = idm; }
+    public Integer getIdm() {
+        return idm;
+    }
 
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
+    public void setIdm(Integer idm) {
+        this.idm = idm;
+    }
 
-    public LocalDateTime getSendDate() { return sendDate; }
-    public void setSendDate(LocalDateTime sendDate) { this.sendDate = sendDate; }
+    public String getContent() {
+        return content;
+    }
 
-    public Boolean getEdited() { return edited; }
-    public void setEdited(Boolean edited) { this.edited = edited; }
+    public void setContent(String content) {
+        this.content = content;
+    }
 
-    public LocalDateTime getEditDate() { return editDate; }
-    public void setEditDate(LocalDateTime editDate) { this.editDate = editDate; }
+    public LocalDateTime getSendDate() {
+        return sendDate;
+    }
 
-    public User getAuthor() { return author; }
-    public void setAuthor(User author) { this.author = author; }
+    public void setSendDate(LocalDateTime sendDate) {
+        this.sendDate = sendDate;
+    }
 
-    public Channel getChannel() { return channel; }
-    public void setChannel(Channel channel) { this.channel = channel; }
+    public Boolean getEdited() {
+        return edited;
+    }
 
-    public Message getParentMessage() { return parentMessage; }
-    public void setParentMessage(Message parentMessage) { this.parentMessage = parentMessage; }
+    public void setEdited(Boolean edited) {
+        this.edited = edited;
+    }
 
-    @JsonIgnore
-    public List<User> getReactors() { return reactors; }
-    public void setReactors(List<User> reactors) { this.reactors = reactors; }
+    public LocalDateTime getEditDate() {
+        return editDate;
+    }
+
+    public void setEditDate(LocalDateTime editDate) {
+        this.editDate = editDate;
+    }
+
+    public User getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(User author) {
+        this.author = author;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
+    public Message getParentMessage() {
+        return parentMessage;
+    }
+
+    public void setParentMessage(Message parentMessage) {
+        this.parentMessage = parentMessage;
+    }
 }
