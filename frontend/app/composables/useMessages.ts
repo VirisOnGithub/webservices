@@ -5,10 +5,11 @@ export function useMessages(channelId: string | string[], token: string) {
 
   let ws: WebSocket | null = null
 
+  const config = useRuntimeConfig()
+
   const connect = () => {
     const id = Array.isArray(channelId) ? channelId[0] : channelId
-    // obligé de passer le token en paramètre (pas de body dans les websockets)
-    ws = new WebSocket(`ws://localhost:8080/ws/channels/${id}/messages?token=${token}`)
+    ws = new WebSocket(`${config.public.apiBase}/ws/channels/${id}/messages?token=${token}`)
 
     ws.onopen = () => {
       status.value = 'open'

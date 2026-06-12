@@ -48,8 +48,8 @@ services:
     depends_on:
       - backend
     environment:
-      # Variable d'environnement pour que ton Nuxt sache où taper
-      - NUXT_PUBLIC_API_BASE=http://localhost:8080
+      - NUXT_API_BASE=http://backend:8080
+      - NUXT_PUBLIC_API_BASE=http://liscord.clement-reniers.fr:8080
     networks:
       - im-network
 

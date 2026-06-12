@@ -20,7 +20,9 @@ export const useApi = () => {
     | "trace"
     | undefined
 
-  const baseURL = 'http://localhost:8080'
+  const config = useRuntimeConfig()
+
+  const baseURL = config.public.apiBase
   const baseEndpoint = `${baseURL}/api`
 
   interface ApiRequestOptions {
@@ -32,7 +34,7 @@ export const useApi = () => {
   }
 
   const fetchData = (options: ApiRequestOptions) => {
-    let {endpoint, method = 'GET', body, useBaseEndpoint = true, token = null} = options
+    let { endpoint, method = 'GET', body, useBaseEndpoint = true, token = null } = options
     const loading = ref(false)
     const data = ref(null)
     const error = ref('')
@@ -80,8 +82,8 @@ export const useApi = () => {
       }
     }
 
-    return {fetch, data, loading, error}
+    return { fetch, data, loading, error }
   }
 
-  return {fetchData}
+  return { fetchData }
 }

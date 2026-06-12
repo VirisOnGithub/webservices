@@ -50,5 +50,13 @@ export default defineNuxtConfig({
         '@vue/devtools-kit',
       ]
     }
+  },
+
+  runtimeConfig: {
+    apiBase: 'http://backend:8080',
+
+    public: {
+      apiBase: 'http://localhost:8080'
+    }
   }
 })
