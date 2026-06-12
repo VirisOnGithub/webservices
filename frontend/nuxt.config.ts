@@ -56,7 +56,7 @@ export default defineNuxtConfig({
     apiBase: 'http://backend:8080',
 
     public: {
-      apiBase: 'http://localhost:8080'
+      apiBase: 'https://liscord-api.clement-reniers.fr'
     }
   }
 })
